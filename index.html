@@ -1,240 +1,128 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINE名前抽出ツール</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-            font-size: 24px;
-        }
-        textarea, .result {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        button.copy {
-            background: #34a853;
-        }
-        button.clear {
-            background: #ea4335;
-        }
-        .result {
-            background: #f5f5f5;
-            min-height: 20px;
-        }
-        .template {
-            background: #f9f9f9;
-            padding: 15px;
-            margin-top: 20px;
-            border: 1px solid #eee;
-            border-radius: 4px;
-        }
-        .success {
-            background: #34a853;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINE名前作成ツール（学生用）</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+      font-size: 24px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, select, .result {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 15px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .button-clear {
+      background-color: #ea4335;
+    }
+    .button-copy {
+      background-color: #34a853;
+    }
+    .result {
+      margin-top: 20px;
+      background: #f5f5f5;
+      min-height: 20px;
+      padding: 10px;
+    }
+  </style>
 </head>
 <body>
-    <h1>LINE名前抽出ツール</h1>
-    <div>
-        <label for="message">学生の自己紹介メッセージ:</label>
-        <textarea id="message" rows="4" placeholder="例: 木5のオジユン(오지윤)です よろしくお願いします"></textarea>
-    </div>
-    <div>
-        <button onclick="extractName()">抽出する</button>
-        <button class="clear" onclick="clearAll()">クリア</button>
-    </div>
-    <div id="resultContainer" style="display: none;">
-        <label>抽出結果 (LINE名前用):</label>
-        <div class="result-container">
-            <div id="result" class="result"></div>
-            <button id="copyBtn" class="copy" onclick="copyResult()">コピー</button>
-        </div>
-    </div>
-    <div class="template">
-        <h3>定型文:</h3>
-        <div class="template-text">
-            <p>ここに自己紹介メッセージをいれてください。<br><br>例）<br>【水1】の<br>〇〇〇です<br>한글 / 漢字<br>よろしくお願いします</p>
-            <button id="template1Btn" onclick="copyTemplate(1)">コピー</button>
-        </div>
-        <hr>
-        <div class="template-text">
-            <p>ありがとうございます。<br>これから頑張ってくださいね。</p>
-            <button id="template2Btn" onclick="copyTemplate(2)">コピー</button>
-        </div>
-    </div>
-    <script>
-        function extractName() {
-            const message = document.getElementById('message').value;
-            if (!message.trim()) return;
-            let name = "";
-            let dayPeriod = "";
-            let university = "";
-            const koreanNameMatch = message.match(/\(([가-힣\s]+)\)/);
-            if (koreanNameMatch) {
-                name = koreanNameMatch[1];
-            } else {
-                const koreanMatch = message.match(/([가-힣\s]+)/);
-                if (koreanMatch) {
-                    name = koreanMatch[1].trim();
-                } else {
-                    const chineseMatch = message.match(/([一-龯々〇〻\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]{2,4})/);
-                    if (chineseMatch) {
-                        name = chineseMatch[1].trim();
-                    }
-                }
-            }
-            if (!name) {
-                const studentIdPattern = /「[^」]+」の([^\s\.。、,です]{2,4})/;
-                const studentIdMatch = message.match(studentIdPattern);
-                if (studentIdMatch) {
-                    name = studentIdMatch[1].trim();
-                } else {
-                    const namePattern1 = /の\s*([^\s\.。、,です]+)/;
-                    const match1 = message.match(namePattern1);
-                    if (match1) {
-                        name = match1[1].trim();
-                    } else {
-                        const namePattern2 = /の\s*([一-龯々〇〻\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]{2,4})/;
-                        const match2 = message.match(namePattern2);
-                        if (match2) {
-                            name = match2[1].trim();
-                        }
-                    }
-                }
-            }
-            if (name) {
-                name = name.replace(/です.*$/, '');
-            }
-            const bracketPattern = message.match(/【([月火水木金][1-5])】/);
-            if (bracketPattern) {
-                dayPeriod = bracketPattern[1];
-            } else {
-                const shortPattern = message.match(/([月火水木金][1-5])/);
-                if (shortPattern) {
-                    dayPeriod = shortPattern[1];
-                } else {
-                    const longDayPattern = message.match(/([月火水木金])曜([1-5])/);
-                    if (longDayPattern) {
-                        dayPeriod = longDayPattern[1] + longDayPattern[2];
-                    } else {
-                        const fullDayPattern = message.match(/([月火水木金])曜日([1-5])限?/);
-                        if (fullDayPattern) {
-                            dayPeriod = fullDayPattern[1] + fullDayPattern[2];
-                        } else {
-                            const dayMatch = message.match(/([月火水木金])曜/);
-                            const periodMatch = message.match(/([1-5])限/);
-                            if (dayMatch && periodMatch) {
-                                dayPeriod = dayMatch[1] + periodMatch[1];
-                            }
-                        }
-                    }
-                }
-            }
-            if (message.includes("法政")) {
-                university = "法政";
-            } else if (message.includes("明治")) {
-                university = "明治";
-            } else {
-                if (dayPeriod === "水1" || dayPeriod === "水3") {
-                    university = "法政";
-                } else if (["月4", "月5", "木5"].includes(dayPeriod)) {
-                    university = "明治";
-                }
-            }
-            let result = "";
-            if (name && university && dayPeriod) {
-                result = `${name} ${university}25【${dayPeriod}】`;
-            } else {
-                result = `${name || "名前不明"} ${university || "大学不明"}25【${dayPeriod || "時間不明"}】 ※情報不足のため一部推測`;
-            }
-            document.getElementById('result').textContent = result;
-            document.getElementById('resultContainer').style.display = 'block';
-        }
-        function copyResult() {
-            const resultText = document.getElementById('result').textContent;
-            if (!resultText) return;
-            navigator.clipboard.writeText(resultText).then(() => {
-                const copyBtn = document.getElementById('copyBtn');
-                copyBtn.textContent = '✓ コピー済み';
-                copyBtn.classList.add('success');
-                setTimeout(() => {
-                    copyBtn.textContent = 'コピー';
-                    copyBtn.classList.remove('success');
-                }, 2000);
-            }).catch(() => {
-                const textarea = document.createElement('textarea');
-                textarea.value = resultText;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                const copyBtn = document.getElementById('copyBtn');
-                copyBtn.textContent = '✓ コピー済み';
-                copyBtn.classList.add('success');
-                setTimeout(() => {
-                    copyBtn.textContent = 'コピー';
-                    copyBtn.classList.remove('success');
-                }, 2000);
-            });
-        }
-        function copyTemplate(num) {
-            const text = num === 1 ?
-                "ここに自己紹介メッセージをいれてください。\n\n例）\n【水1】の\n〇〇〇です\n한글 / 漢字\nよろしくお願いします" :
-                "ありがとうございます。\nこれから頑張ってくださいね。";
-            const btnId = num === 1 ? 'template1Btn' : 'template2Btn';
-            const btn = document.getElementById(btnId);
-            try {
-                navigator.clipboard.writeText(text).then(() => {
-                    btn.textContent = '✓ コピー済み';
-                    btn.classList.add('success');
-                    setTimeout(() => {
-                        btn.textContent = 'コピー';
-                        btn.classList.remove('success');
-                    }, 2000);
-                }).catch(fallbackCopy);
-            } catch (err) {
-                fallbackCopy();
-            }
-            function fallbackCopy() {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                btn.textContent = '✓ コピー済み';
-                btn.classList.add('success');
-                setTimeout(() => {
-                    btn.textContent = 'コピー';
-                    btn.classList.remove('success');
-                }, 2000);
-            }
-        }
-        function clearAll() {
-            document.getElementById('message').value = '';
-            document.getElementById('resultContainer').style.display = 'none';
-        }
-    </script>
+  <h1>LINE名前作成ツール（学生用）</h1>
+
+  <label for="university">大学:</label>
+  <select id="university">
+    <option value="法政">法政</option>
+    <option value="明治">明治</option>
+  </select>
+
+  <label for="day">授業曜日:</label>
+  <select id="day">
+    <option value="月">月曜日</option>
+    <option value="火">火曜日</option>
+    <option value="水">水曜日</option>
+    <option value="木">木曜日</option>
+    <option value="金">金曜日</option>
+  </select>
+
+  <label for="period">授業時限:</label>
+  <select id="period">
+    <option value="1">1限目</option>
+    <option value="2">2限目</option>
+    <option value="3">3限目</option>
+    <option value="4">4限目</option>
+    <option value="5">5限目</option>
+  </select>
+
+  <label for="name">名前（한글または漢字）:</label>
+  <input type="text" id="name" placeholder="例：〇〇〇 または △△△">
+
+  <button onclick="generateLineName()">作成する</button>
+  <button class="button-copy" onclick="copyResult()">コピー</button>
+  <button class="button-clear" onclick="clearForm()">クリア</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    function generateLineName() {
+      const university = document.getElementById('university').value;
+      const day = document.getElementById('day').value;
+      const period = document.getElementById('period').value;
+      const name = document.getElementById('name').value.trim();
+
+      if (!name) {
+        document.getElementById('result').textContent = '名前を入力してください。';
+        return;
+      }
+
+      const dayPeriod = `${day}${period}`;
+      const result = `${name} ${university}25【${dayPeriod}】`;
+      document.getElementById('result').textContent = result;
+    }
+
+    function copyResult() {
+      const resultText = document.getElementById('result').textContent;
+      if (!resultText) return;
+      navigator.clipboard.writeText(resultText).then(() => {
+        alert('コピーしました！');
+      }).catch(() => {
+        alert('コピーできませんでした');
+      });
+    }
+
+    function clearForm() {
+      document.getElementById('university').value = '法政';
+      document.getElementById('day').value = '月';
+      document.getElementById('period').value = '1';
+      document.getElementById('name').value = '';
+      document.getElementById('result').textContent = '';
+    }
+  </script>
 </body>
 </html>
+
