@@ -36,19 +36,11 @@
       padding: 10px 15px;
       border-radius: 4px;
       cursor: pointer;
-      margin-right: 10px;
-    }
-    .button-clear {
-      background-color: #ea4335;
-    }
-    .button-copy {
-      background-color: #34a853;
     }
     .result {
       margin-top: 20px;
       background: #f5f5f5;
       min-height: 20px;
-      padding: 10px;
     }
   </style>
 </head>
@@ -80,11 +72,9 @@
   </select>
 
   <label for="name">名前（한글または漢字）:</label>
-  <input type="text" id="name" placeholder="例：〇〇〇 または △△△">
+  <input type="text" id="name" placeholder="例：오지윤 または 王小明">
 
   <button onclick="generateLineName()">作成する</button>
-  <button class="button-copy" onclick="copyResult()">コピー</button>
-  <button class="button-clear" onclick="clearForm()">クリア</button>
 
   <div class="result" id="result"></div>
 
@@ -104,25 +94,6 @@
       const result = `${name} ${university}25【${dayPeriod}】`;
       document.getElementById('result').textContent = result;
     }
-
-    function copyResult() {
-      const resultText = document.getElementById('result').textContent;
-      if (!resultText) return;
-      navigator.clipboard.writeText(resultText).then(() => {
-        alert('コピーしました！');
-      }).catch(() => {
-        alert('コピーできませんでした');
-      });
-    }
-
-    function clearForm() {
-      document.getElementById('university').value = '法政';
-      document.getElementById('day').value = '月';
-      document.getElementById('period').value = '1';
-      document.getElementById('name').value = '';
-      document.getElementById('result').textContent = '';
-    }
   </script>
 </body>
 </html>
-
